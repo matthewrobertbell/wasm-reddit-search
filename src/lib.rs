@@ -1,6 +1,5 @@
 use handlebars::Handlebars;
-use serde::Deserialize;
-use serde_json::json;
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
@@ -25,7 +24,7 @@ pub struct RedditPostContainer {
     data: RedditPost,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RedditPost {
     id: String,
     url: String,
@@ -77,13 +76,7 @@ async fn search(document: Document) -> Result<(), JsValue> {
         let rendered = handlebars
             .render_template(
                 template_string,
-                &json!({
-                    "url": post.url,
-                    "permalink": post.permalink,
-                    "num_comments": post.num_comments,
-                    "subreddit_name_prefixed": post.subreddit_name_prefixed,
-                    "ups": post.ups
-                }),
+                &serde_json::to_string(&post).map_err(|e| e.to_string())?,
             )
             .map_err(|e| e.to_string())?;
 
